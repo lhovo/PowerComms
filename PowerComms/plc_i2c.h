@@ -10,17 +10,14 @@ Note:
 
  */
 
-
-
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
 #else
 #include "WProgram.h"
 #endif
-
 #include <Wire.h>
   
-#define I2C_SLAVE_ADDRESS 0x01
+#define PLC_ADDRESS 0x01
 
 #define I2C_FAIL 0x00
 #define I2C_SUCCESS 0x01
@@ -35,5 +32,4 @@ class PLC_I2C {
     byte ReadFromOffset (byte bOffset, byte *pbData, byte bDataLength);
     byte IsUpdated(void);
   private:
-  
-}
+};
