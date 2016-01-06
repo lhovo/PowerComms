@@ -15,8 +15,10 @@ Note:
 #else
 #include "WProgram.h"
 #endif
+
 #include <Wire.h>
-  
+#include "plc_commands.h"
+
 #define PLC_ADDRESS 0x01
 
 #define I2C_FAIL 0x00
@@ -27,9 +29,14 @@ Note:
 
 class PLC_I2C {
   public:
+    byte init();
+    byte SetDestinationAddress (byte bAddrType, byte *pbDestinationAddress);
+    byte TransmitPacket(byte bCommand, byte *pbTXData, byte bDataLength);
+    byte IsPacketReceived(void);
+    
+    byte ReadFromOffset (byte bOffset, byte *pbData, byte bDataLength);
+  private:
     void Start(void);
     byte WriteToOffset(byte bOffset, byte *pbData, byte bDataLength);
-    byte ReadFromOffset (byte bOffset, byte *pbData, byte bDataLength);
     byte IsUpdated(void);
-  private:
 };

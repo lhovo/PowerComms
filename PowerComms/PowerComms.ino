@@ -17,7 +17,7 @@
  This example code is in the public domain.
 
  */
- 
+
 #if defined(ARDUINO) && ARDUINO >= 100
 #include "Arduino.h"
 #else
@@ -25,6 +25,10 @@
 #endif
 
 #include "plc_i2c.h"
+
+PLC_I2C plc;
+byte destinationAddress;
+byte localAddress;
 
 void setup()
 {
@@ -35,17 +39,27 @@ void setup()
   }
 
 
-  Serial.print("Initializing SD card...");
-  // On the Ethernet Shield, CS is pin 4. It's set as an output by default.
-  // Note that even if it's not used as the CS pin, the hardware SS pin
-  // (10 on most Arduino boards, 53 on the Mega) must be left as an output
-  // or the SD library functions will not work.
-  pinMode(10, OUTPUT);
+  Serial.print("Initializing");
+  //pinMode(10, OUTPUT);
+
+//  plc.init();
+//  plc.ReadFromOffset(Local_LA_LSB, &localAddress, 1);
+//  if (localAddress == 0x01)
+//  {
+//    destinationAddress = 0x02; 	/* Set the destination address to logical address 0x02 */
+//  }
+//  else
+//  {		
+//    destinationAddress = 0x01; /* Set the destination address to logical address 0x01 */ 
+//  }
+//  plc.SetDestinationAddress (TX_DA_Type_Log, &destinationAddress); 
 }
 
 void loop()
 {
   // nothing happens after setup finishes.
+  Serial.print("Initializing");
+  delay(5000);
 }
 
 
