@@ -29,9 +29,9 @@ byte PLC_I2C::init()
 	byte bTemp; 
 	byte bI2CResult = I2C_SUCCESS;
 	
-	/* Start the I2C master and enable the global and local interrupts */    
+	/* Start the I2C master and enable the global and local interrupts */   
     Start();
-		
+    
 	/* Enable the PLC device */
   	bTemp = (TX_Enable | RX_Enable | RX_Override);
   	bI2CResult &= WriteToOffset(PLC_Mode, &bTemp, 1);
@@ -223,13 +223,8 @@ Note:
 
 void PLC_I2C::Start(void)
 {
-  int i;
   /* Initial delay of 1.25s is required before I2C communication should start with PLC */
-  for (i = 0; i < 1000; i++)
-  {
-    delay(1250); /* 50us * 25 = 1.25 ms * 1000 = 1.25 s */
-  }
-	
+  delay(1250);
   Wire.begin();
 }
 
