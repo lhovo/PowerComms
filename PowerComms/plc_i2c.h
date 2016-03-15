@@ -35,8 +35,8 @@ class PLC_I2C {
     byte IsPacketReceived(void);
     
     byte ReadFromOffset (byte bOffset, byte *pbData, byte bDataLength);
+    byte WriteToOffset(byte bOffset, byte *pbData, byte bDataLength);
   private:
     void Start(void);
-    byte WriteToOffset(byte bOffset, byte *pbData, byte bDataLength);
     byte IsUpdated(void);
 };
