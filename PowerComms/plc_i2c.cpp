@@ -4,11 +4,11 @@
 #define I2C_GAP 	  1		/* The gap between the stop bit and start bit of the next I2C message. In multiples of 1ms. */
 #define I2C_TIMEOUT	250		/* Set the I2C timeout to be 250ms. If there is no response, it will give up */
 
-#define PLC_INT_BYPASS 1 	/* When 0, this device will check if the PLC device has asserted its HOST_INT pin high to 
+#define PLC_INT_BYPASS 0 	/* When 0, this device will check if the PLC device has asserted its HOST_INT pin high to 
 							 * 	indicate than a PLC event has occurred. This device will then check the event type via I2C.
 						  	 * When 1, this device will ignore the HOST_INT pin and continuosly poll the PLC device for 
 							 * 	event updates with I2C. */
-
+#define HOST_INIT 2
 /*****************************************************************************
 * Function Name: PLC_Init()
 ******************************************************************************
@@ -51,6 +51,8 @@ byte PLC_I2C::init()
 	/* Set the receiver gain. */
 	bTemp = 0x06;
 	bI2CResult &= WriteToOffset (RX_Gain, &bTemp, 1);
+
+  pinMode( HOST_INIT, INPUT);
 
 	return bI2CResult;
 }
@@ -366,14 +368,7 @@ Note:
 *****************************************************************************/
 byte PLC_I2C::IsUpdated(void)
 {
-//	/* Check the status of the pin P0[7] to see if the PLC device has asserted the HOST_INT pin. */
-//	if (PLC_INT_Data_ADDR & PLC_INT_MASK)
-//	{
-//		return TRUE;
-//	}
-//	else
-//	{
-//		return FALSE;
-//	}
+  // Check the status of the pin P0[7] to see if the PLC device has asserted the HOST_INT pin.
+	return digitalRead(HOST_INIT);
 }
 

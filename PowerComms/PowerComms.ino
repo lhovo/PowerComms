@@ -29,9 +29,12 @@
 PLC_I2C plc;
 byte destinationAddress;
 byte localAddress;
-uint32_t data = 0, oldData = 0;
+byte data[32];
 
-bool transmitter = false;
+uint32_t* dataVal = (uint32_t*) data;
+uint32_t oldData = 0;
+
+bool transmitter = true;
 bool receiver = !transmitter;
 
 bool bStreamPackets = false;    /* Indicates whether the device is in transmit or receive mode */
@@ -45,8 +48,8 @@ int i=0; //itterator
 
 uint8_t pinArray[] = {
         // 1 VDD
-        // 2 RX
-        // 3 TX
+        // 2 RX (0)
+        // 3 TX (1)
      9, // 4 - PWM
     10, // 5 - PWM
 
@@ -101,37 +104,28 @@ void setup()
 void loop()
 {
   if (transmitter) {
-    data = 0;
+    (*dataVal) = 0;
     for(i=0; i<sizeof(pinArray);i++){
-      data |= digitalRead( pinArray[i] ) << i;
+      (*dataVal) |= digitalRead( pinArray[i] ) << i;
     }
-    
-    // Some magic
-    // The first byte should be zero repesenting the first packet.
-    // Second byte should be 1 repesenting the second packet.
-    // We need to offset the data to fit this id in the packet
-    data = data << 1;
-    data = data & 0xff | (data & 0xff00 << 1) | 0x0100 ;
 
-    if (oldData != data)
+    if (oldData != (*dataVal))
     {
-      oldData = data;
-      transmit((byte*)(&data));
-      delay(1);
-      transmit((byte*)(&data)+1);
+      oldData = (*dataVal);
+      transmit(data, 2);
       Serial.print("Tx:");
-      Serial.println(data);
+      Serial.println(data[0]);
     }
   }
   else if (receiver) {
     receive();
-    if(oldData != data)
+    if(oldData != (*dataVal))
     {
-      oldData == data;
+      oldData = (*dataVal);
       Serial.print("Rx:");
-      Serial.println(data);
+      Serial.println(*dataVal);
       for(i=0; i<sizeof(pinArray);i++){
-        if ( data & (0x01<< i) )
+        if ( (*dataVal) & (0x01<< i) )
         {
           digitalWrite( pinArray[i], true );
         }
@@ -144,9 +138,9 @@ void loop()
   }
 }
 
-void transmit(uint8_t *message) {
+void transmit(byte *message, byte dataLength) {
     // Transmit the packet with the data read from the ADC
-    bPLC_Success = plc.TransmitPacket(CMD_SENDMSG, message, 1);
+    bPLC_Success = plc.TransmitPacket(CMD_SENDMSG, message, dataLength);
     if (bPLC_Success & Status_TX_Data_Sent)
     {
       wSuccessCount++;
@@ -168,14 +162,11 @@ void receive() {
     plc.ReadFromOffset(RX_CommandID, &temp, 1);
     if (temp == CMD_SENDMSG)
     { 
-      plc.ReadFromOffset(RX_Data, &temp, 1);
-      Serial.println(temp);
-      if ((temp & 0x01) == 0x00) {
-        data = (data & 0xff80) | (temp >> 1);
-      }
-      else if ((temp & 0x01) == 0x01) {
-        data = (data & 0x7f) | ((temp & 0xFE) << 7);
-      }
+      plc.ReadFromOffset(RX_Message_INFO, &temp, 1);
+      plc.ReadFromOffset(RX_Data, data, temp & 0xF);
+      Serial.println(*dataVal);
+      //Serial.print("PK Len# = ");
+      //Serial.println(temp & 0xF);
     }
     temp = 0x00; 
     plc.WriteToOffset(RX_Message_INFO, &temp, 1);
