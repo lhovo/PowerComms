@@ -24,7 +24,7 @@ Return:
 Note:
 * 
 *****************************************************************************/
-byte PLC_I2C::init()
+byte PLC_I2C::init(bool transmitter)
 {
 	byte bTemp; 
 	byte bI2CResult = I2C_SUCCESS;
@@ -33,8 +33,14 @@ byte PLC_I2C::init()
     Start();
     
 	/* Enable the PLC device */
-  	bTemp = (TX_Enable | RX_Enable | RX_Override);
-  	bI2CResult &= WriteToOffset(PLC_Mode, &bTemp, 1);
+  bTemp = (Lock_Configuration | Promiscuous_MASK);
+  if (transmitter) {
+    bTemp |= TX_Enable;
+  }
+  else {
+    bTemp |= (RX_Enable | RX_Override);
+  }
+  bI2CResult &= WriteToOffset(PLC_Mode, &bTemp, 1);
 	
 	/* Enable Interrupt reporting for all events */
 	bTemp = (INT_UnableToTX | INT_TX_NO_ACK | INT_TX_NO_RESP | INT_RX_Packet_Dropped | INT_RX_Data_Available | INT_TX_Data_Sent);
@@ -42,14 +48,18 @@ byte PLC_I2C::init()
 	
 	/* Set the PLC device to acknowledgment mode and 1 retry*/
 	bTemp = (TX_Service_Type | 0x01) ;
-  	bI2CResult &= WriteToOffset(TX_Config, &bTemp, 1);
-			
+  bI2CResult &= WriteToOffset(TX_Config, &bTemp, 1);
+
+  /* Set Config */
+  bTemp = (Modem_TXDelay_7ms | Modem_FSKBW_3M | Modem_BPS_2400);
+  bI2CResult &= WriteToOffset (Modem_Config, &bTemp, 1);
+      
 	/* Set the transmitter gain. */
-	bTemp = 0x0b;
+	bTemp = 0x0E;
 	bI2CResult &= WriteToOffset (TX_Gain, &bTemp, 1);
 	
 	/* Set the receiver gain. */
-	bTemp = 0x06;
+	bTemp = 0x01;
 	bI2CResult &= WriteToOffset (RX_Gain, &bTemp, 1);
 
   pinMode( HOST_INIT, INPUT);

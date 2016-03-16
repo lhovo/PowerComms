@@ -32,7 +32,7 @@ byte localAddress;
 byte data[32];
 
 uint32_t* dataVal = (uint32_t*) data;
-uint32_t oldData = 0;
+uint32_t oldData = 0, timeoutCount = 0;
 
 bool transmitter = true;
 bool receiver = !transmitter;
@@ -64,12 +64,12 @@ void setup()
 {
 
   // Open serial communications and wait for port to open:
-  Serial.begin(9600);
+//  Serial.begin(9600);
 
 
-  Serial.println("Init Start");
-  plc.init();
-  Serial.println("Init End");
+//  Serial.println("Init Start");
+  plc.init(transmitter);
+//  Serial.println("Init End");
   
   if (transmitter) {
     localAddress = 0x01;
@@ -81,10 +81,10 @@ void setup()
     destinationAddress = 0x01;
   }
   
-  Serial.println("Local:");
-  Serial.println(localAddress);
-  Serial.println("Dest:");
-  Serial.println(destinationAddress);
+//  Serial.println("Local:");
+//  Serial.println(localAddress);
+//  Serial.println("Dest:");
+//  Serial.println(destinationAddress);
 
   plc.WriteToOffset(Local_LA_LSB, &localAddress, 1);
   plc.SetDestinationAddress (TX_DA_Type_Log, &destinationAddress);
@@ -109,21 +109,24 @@ void loop()
       (*dataVal) |= digitalRead( pinArray[i] ) << i;
     }
 
-    if (oldData != (*dataVal))
+    if (oldData != (*dataVal) || timeoutCount > 0xFFF)
     {
       oldData = (*dataVal);
       transmit(data, 2);
-      Serial.print("Tx:");
-      Serial.println(data[0]);
+//      Serial.print("Tx:");
+//      Serial.println(data[0]);
+      timeoutCount = 0;
     }
+    delay(1);
+    timeoutCount ++;
   }
   else if (receiver) {
     receive();
     if(oldData != (*dataVal))
     {
       oldData = (*dataVal);
-      Serial.print("Rx:");
-      Serial.println(*dataVal);
+//      Serial.print("Rx:");
+//      Serial.println(*dataVal);
       for(i=0; i<sizeof(pinArray);i++){
         if ( (*dataVal) & (0x01<< i) )
         {
@@ -151,20 +154,20 @@ void transmit(byte *message, byte dataLength) {
 void receive() {
   byte temp;
   while (plc.IsPacketReceived() == true) {
-    wRxCount++;
-    plc.ReadFromOffset(RX_SA, &temp, 1);
-    destinationAddress = temp;
-    plc.WriteToOffset(TX_DA, &destinationAddress, 1);
+//    wRxCount++;
+//    plc.ReadFromOffset(RX_SA, &temp, 1);
+//    destinationAddress = temp;
+//    plc.WriteToOffset(TX_DA, &destinationAddress, 1);
 
     //Serial.print("SA =");
     //Serial.println(temp);
-    Serial.print("RX# = ");
+//    Serial.print("RX# = ");
     plc.ReadFromOffset(RX_CommandID, &temp, 1);
     if (temp == CMD_SENDMSG)
     { 
       plc.ReadFromOffset(RX_Message_INFO, &temp, 1);
       plc.ReadFromOffset(RX_Data, data, temp & 0xF);
-      Serial.println(*dataVal);
+//      Serial.println(*dataVal);
       //Serial.print("PK Len# = ");
       //Serial.println(temp & 0xF);
     }

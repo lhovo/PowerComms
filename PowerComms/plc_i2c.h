@@ -29,7 +29,7 @@ Note:
 
 class PLC_I2C {
   public:
-    byte init();
+    byte init(bool transmitter);
     byte SetDestinationAddress (byte bAddrType, byte *pbDestinationAddress);
     byte TransmitPacket(byte bCommand, byte *pbTXData, byte bDataLength);
     byte IsPacketReceived(void);
