@@ -101,13 +101,10 @@ void setup()
 void loop()
 {
   if (transmitter) {
-    delay(5);
-    
     data = 0;
     for(i=0; i<sizeof(pinArray);i++){
       data |= digitalRead( pinArray[i] ) << i;
     }
-    data |= 512;
     
     // Some magic
     // The first byte should be zero repesenting the first packet.
@@ -115,12 +112,16 @@ void loop()
     // We need to offset the data to fit this id in the packet
     data = data << 1;
     data = data & 0xff | (data & 0xff00 << 1) | 0x0100 ;
-    
-    transmit((byte*)(&data));
-    delay(1);
-    transmit((byte*)(&data)+1);
-    Serial.print("Tx:");
-    Serial.println(data);
+
+    if (oldData != data)
+    {
+      oldData = data;
+      transmit((byte*)(&data));
+      delay(1);
+      transmit((byte*)(&data)+1);
+      Serial.print("Tx:");
+      Serial.println(data);
+    }
   }
   else if (receiver) {
     receive();
